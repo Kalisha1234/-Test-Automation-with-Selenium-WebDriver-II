@@ -2,6 +2,8 @@ package com.xyzbank.utils;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.edge.EdgeOptions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -14,19 +16,33 @@ public class DriverManager {
 
     public static WebDriver getDriver() {
         if (driver.get() == null) {
-            WebDriverManager.edgedriver().setup();
-            EdgeOptions options = new EdgeOptions();
-            options.addArguments("--start-maximized");
-            options.addArguments("--disable-notifications");
-            options.addArguments("--remote-allow-origins=*");
+            String browser = System.getProperty("browser", "edge");
             
-            if (System.getProperty("headless", "false").equals("true")) {
+            if (browser.equalsIgnoreCase("chrome")) {
+                WebDriverManager.chromedriver().setup();
+                ChromeOptions options = new ChromeOptions();
+                options.addArguments("--start-maximized");
+                options.addArguments("--disable-notifications");
+                options.addArguments("--remote-allow-origins=*");
                 options.addArguments("--headless");
                 options.addArguments("--no-sandbox");
                 options.addArguments("--disable-dev-shm-usage");
+                driver.set(new ChromeDriver(options));
+            } else {
+                WebDriverManager.edgedriver().setup();
+                EdgeOptions options = new EdgeOptions();
+                options.addArguments("--start-maximized");
+                options.addArguments("--disable-notifications");
+                options.addArguments("--remote-allow-origins=*");
+                
+                if (System.getProperty("headless", "false").equals("true")) {
+                    options.addArguments("--headless");
+                    options.addArguments("--no-sandbox");
+                    options.addArguments("--disable-dev-shm-usage");
+                }
+                driver.set(new EdgeDriver(options));
             }
             
-            driver.set(new EdgeDriver(options));
             driver.get().manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
         }
         return driver.get();

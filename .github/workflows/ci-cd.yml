@@ -26,7 +26,7 @@ jobs:
       run: mvn clean compile
     
     - name: Run tests
-      run: mvn test -Dheadless=true
+      run: mvn test -Dbrowser=chrome
       continue-on-error: true
     
     - name: Generate Allure Report
