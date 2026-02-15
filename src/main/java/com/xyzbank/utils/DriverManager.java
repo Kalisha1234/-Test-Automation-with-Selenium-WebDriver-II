@@ -20,8 +20,7 @@ public class DriverManager {
             options.addArguments("--disable-notifications");
             options.addArguments("--remote-allow-origins=*");
             
-            String gridUrl = System.getenv("SELENIUM_GRID_URL");
-            if (gridUrl != null) {
+            if (System.getProperty("headless", "false").equals("true")) {
                 options.addArguments("--headless");
                 options.addArguments("--no-sandbox");
                 options.addArguments("--disable-dev-shm-usage");
