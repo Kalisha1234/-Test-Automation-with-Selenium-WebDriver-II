@@ -164,6 +164,9 @@ The framework uses Page Object Model (POM) design pattern:
 
 **Total**: 12 automated test cases
 
+## Latest Update
+- All tests verified and ready for CI/CD execution
+
 ## Contributing
 
 1. Create a feature branch
