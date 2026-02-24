@@ -14,8 +14,6 @@ public class AccountPage extends BasePage {
     private By withdrawSubmitBtn = By.xpath("//button[@type='submit' and text()='Withdraw']");
 
     private By balanceLabel = By.xpath("//div[contains(@class,'center')]//strong[2]");
-    // Updated locator to catch the dynamic message span
-    private By messageLabel = By.xpath("//span[@ng-show='message']");
 
     public AccountPage(WebDriver driver) {
         super(driver);
@@ -30,19 +28,13 @@ public class AccountPage extends BasePage {
     @Step("Deposit amount: {amount}")
     public void deposit(String amount) {
         click(depositBtn);
-        shortWait();
-        typeWithWait(amountInput, amount);
         click(depositSubmitBtn);
-        mediumWait();
     }
 
     @Step("Withdraw amount: {amount}")
     public void withdraw(String amount) {
         click(withdrawlBtn);
-        shortWait();
-        typeWithWait(amountInput, amount);
         click(withdrawSubmitBtn);
-        mediumWait();
     }
 
     @Step("Get current balance")
@@ -52,11 +44,5 @@ public class AccountPage extends BasePage {
 
     @Step("Get message")
     public String getMessage() {
-        try {
-            // Adding a tiny wait here ensures Selenium catches the text change
-            return getText(messageLabel).trim();
-        } catch (Exception e) {
-            return "";
         }
     }
-}

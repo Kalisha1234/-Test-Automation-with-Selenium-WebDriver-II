@@ -30,7 +30,11 @@ This document outlines the test plan for automating the XYZ Bank application usi
 ### 4.1 Test Approach
 - **Framework**: Page Object Model (POM) with Selenium WebDriver
 - **Test Framework**: JUnit 5
+<<<<<<< HEAD
 - **Browser**: Google Chrome (headless mode for CI/CD)
+=======
+- **Browser**: Microsoft Edge
+>>>>>>> 4e662b61d0922d61955239b783be8e90958e7a9d
 - **Reporting**: Allure Report
 - **CI/CD**: GitHub Actions with Docker containerization
 
@@ -46,8 +50,13 @@ This document outlines the test plan for automating the XYZ Bank application usi
 - **Type**: Web Application (AngularJS)
 
 ### 5.2 Test Environment
+<<<<<<< HEAD
 - **OS**: Windows/Linux/macOS (Docker)
 - **Browser**: Google Chrome (latest stable)
+=======
+- **OS**: Windows/Linux (Docker)
+- **Browser**: Microsoft Edge (latest stable)
+>>>>>>> 4e662b61d0922d61955239b783be8e90958e7a9d
 - **Java Version**: 11
 - **Build Tool**: Maven 3.8+
 
