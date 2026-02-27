@@ -73,14 +73,6 @@ public class BasePage {
     }
 
     /**
-     * Wait for element to be clickable with custom timeout
-     */
-    protected void waitForElementClickable(By locator, int seconds) {
-        new WebDriverWait(driver, Duration.ofSeconds(seconds))
-                .until(ExpectedConditions.elementToBeClickable(locator));
-    }
-
-    /**
      * Wait for a short period (useful after actions that trigger updates)
      */
     protected void shortWait() {
