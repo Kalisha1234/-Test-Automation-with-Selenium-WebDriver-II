@@ -17,36 +17,23 @@ public class DriverManager {
     public static WebDriver getDriver() {
         if (driver.get() == null) {
             String browser = System.getProperty("browser", "chrome");
-            
+
             if (browser.equalsIgnoreCase("chrome")) {
                 WebDriverManager.chromedriver().setup();
                 ChromeOptions options = new ChromeOptions();
                 options.addArguments("--start-maximized");
                 options.addArguments("--disable-notifications");
                 options.addArguments("--remote-allow-origins=*");
-                
+
                 // Always headless for CI/CD environments, configurable for local
-                if (System.getProperty("headless", "true").equals("true")) {
+                if (System.getProperty("headless", "false").equals("false")) {
                     options.addArguments("--headless");
                     options.addArguments("--no-sandbox");
                     options.addArguments("--disable-dev-shm-usage");
                 }
                 driver.set(new ChromeDriver(options));
-            } else {
-                WebDriverManager.edgedriver().setup();
-                EdgeOptions options = new EdgeOptions();
-                options.addArguments("--start-maximized");
-                options.addArguments("--disable-notifications");
-                options.addArguments("--remote-allow-origins=*");
-                
-                if (System.getProperty("headless", "false").equals("true")) {
-                    options.addArguments("--headless");
-                    options.addArguments("--no-sandbox");
-                    options.addArguments("--disable-dev-shm-usage");
-                }
-                driver.set(new EdgeDriver(options));
             }
-            
+
             driver.get().manage().timeouts().implicitlyWait(Duration.ofSeconds(0));
         }
         return driver.get();
