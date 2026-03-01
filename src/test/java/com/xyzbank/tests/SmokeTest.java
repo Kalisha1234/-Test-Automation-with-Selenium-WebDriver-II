@@ -17,7 +17,7 @@ public class SmokeTest {
     public void testBasicAssertion() {
         assertTrue(true, "This test should always pass");
     }
-
+    
     @Test
     @DisplayName("Basic math test")
     @Description("Verify test framework is working")

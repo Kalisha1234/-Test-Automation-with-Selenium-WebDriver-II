@@ -14,7 +14,6 @@ This project automates testing for the XYZ Bank application, covering both Bank 
 - **Build Tool**: Maven
 - **Test Framework**: JUnit 5
 - **Automation Tool**: Selenium WebDriver 4.15.0
-- **Browser**: Google Chrome (headless mode for CI/CD)
 - **Reporting**: Allure Report
 - **Containerization**: Docker
 - **CI/CD**: GitHub Actions
@@ -64,7 +63,6 @@ xyz-bank-automation/
 
 - Java 11 or higher
 - Maven 3.8+
-- Google Chrome browser (for local execution)
 - Docker (optional, for containerized execution)
 - Git
 

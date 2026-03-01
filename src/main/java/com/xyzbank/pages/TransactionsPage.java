@@ -4,7 +4,6 @@ import io.qameta.allure.Step;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import java.util.List;
 
@@ -21,7 +20,7 @@ public class TransactionsPage extends BasePage {
     @Step("Get transaction count")
     public int getTransactionCount() {
         List<WebElement> rows = driver.findElements(transactionRows);
-        return Math.max(0, rows.size() - 1); // exclude header row
+        return rows.size() - 1; // Exclude header row
     }
 
     @Step("Check if transactions are displayed")
@@ -37,12 +36,5 @@ public class TransactionsPage extends BasePage {
     @Step("Check if Reset button exists")
     public boolean isResetButtonDisplayed() {
         return isDisplayed(resetBtn);
-    }
-
-    @Step("Attempt to reset transactions")
-    public void attemptReset() {
-        if (isResetButtonDisplayed()) {
-            click(resetBtn); // simulate malicious or invalid customer action
-        }
     }
 }

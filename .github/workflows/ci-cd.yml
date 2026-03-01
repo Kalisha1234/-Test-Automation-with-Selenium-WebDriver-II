@@ -2,9 +2,9 @@ name: XYZ Bank Test Automation CI/CD
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
@@ -26,11 +26,11 @@ jobs:
       run: mvn clean compile
     
     - name: Run smoke tests first
-      run: mvn test -Dtest=SmokeTest -Dheadless=true
+      run: mvn test -Dtest=SmokeTest
       continue-on-error: false
     
     - name: Run browser tests
-      run: mvn test -Dbrowser=chrome -Dheadless=true
+      run: mvn test -Dbrowser=chrome
       continue-on-error: true
     
     - name: Generate Allure Report
@@ -50,8 +50,6 @@ jobs:
       with:
         name: allure-report
         path: target/site/allure-maven-plugin
-    
-
 
   docker-build:
     runs-on: ubuntu-latest
