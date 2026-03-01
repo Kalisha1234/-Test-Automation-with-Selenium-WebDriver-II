@@ -1,192 +1,181 @@
 # XYZ Bank Test Automation
 
-Selenium WebDriver test automation framework for XYZ Bank application using Java, JUnit 5, Maven, Docker, and GitHub Actions CI/CD.
+Selenium WebDriver test automation framework for XYZ Bank application using Java, JUnit 5, Maven, and Allure reporting.
 
-## Project Overview
+## Application Under Test
 
-This project automates testing for the XYZ Bank application, covering both Bank Manager and Customer functionalities.
-
-**Application URL**: https://www.globalsqa.com/angularJs-protractor/BankingProject/#/login
+**URL**: https://www.globalsqa.com/angularJs-protractor/BankingProject/#/login
 
 ## Tech Stack
 
 - **Language**: Java 11
 - **Build Tool**: Maven
 - **Test Framework**: JUnit 5
-- **Automation Tool**: Selenium WebDriver 4.15.0
-- **Reporting**: Allure Report
-- **Containerization**: Docker
+- **Automation**: Selenium WebDriver 4.15.0
+- **Reporting**: Allure Report 2.24.0
+- **Design Pattern**: Page Object Model (POM)
 - **CI/CD**: GitHub Actions
+- **Containerization**: Docker
 
 ## Project Structure
 
 ```
 xyz-bank-automation/
-├── .github/
-│   └── workflows/
-│       └── ci-cd.yml          # GitHub Actions CI/CD pipeline
-├── docs/
-│   └── TEST_PLAN.md           # Comprehensive test plan
+├── .github/workflows/
+│   └── ci-cd.yml              # CI/CD pipeline
 ├── src/
-│   ├── main/
-│   │   └── java/
-│   │       └── com/xyzbank/
-│   │           ├── pages/     # Page Object Model classes
-│   │           └── utils/     # Utility classes
-│   └── test/
-│       ├── java/
-│       │   └── com/xyzbank/
-│       │       └── tests/     # Test classes
-│       └── resources/
-│           └── allure.properties
-├── Dockerfile                  # Docker configuration
-├── docker-compose.yml          # Docker Compose for Selenium Grid
-├── pom.xml                     # Maven dependencies
+│   ├── main/java/com/xyzbank/
+│   │   ├── pages/             # Page Object classes
+│   │   └── utils/             # WebDriver management
+│   └── test/java/com/xyzbank/
+│       ├── listeners/         # Test listeners (screenshots)
+│       ├── testdata/          # Test data
+│       └── tests/             # Test classes
+├── Dockerfile
+├── docker-compose.yml
+├── pom.xml
 └── README.md
 ```
 
-## Features Tested
+## Features
 
-### Bank Manager
-- Add customers with validation
+✅ Page Object Model (POM) design pattern
+✅ Selenium best practices (explicit waits only)
+✅ Automatic screenshot capture on test failures
+✅ Allure reporting with detailed test steps
+✅ Docker support for containerized execution
+✅ CI/CD pipeline with GitHub Actions
+✅ ThreadLocal WebDriver for parallel execution support
+
+## Test Coverage
+
+### Bank Manager Tests
+- Add customer with valid/invalid data
 - Create accounts for customers
 - Delete customer accounts
 
-### Customer
-- Login functionality
-- Deposit funds
-- Withdraw money
-- View transaction history
-- Balance verification
+### Customer Tests
+- Customer login
+- Deposit funds with balance verification
+- Withdraw funds with balance verification
+- Insufficient balance validation
+- Transaction history viewing
+- Transaction security
 
 ## Prerequisites
 
-- Java 11 or higher
+- Java 11+
 - Maven 3.8+
-- Docker (optional, for containerized execution)
-- Git
+- Docker (optional)
 
-## Installation
+## Quick Start
 
-1. Clone the repository:
+### 1. Clone Repository
 ```bash
-git clone <repository-url>
+git clone https://github.com/Kalisha1234/-Test-Automation-with-Selenium-WebDriver-II.git
 cd xyz-bank-automation
 ```
 
-2. Install dependencies:
-```bash
-mvn clean install -DskipTests
-```
-
-## Running Tests
-
-### Local Execution
-
-Run all tests:
+### 2. Run Tests
 ```bash
 mvn clean test
 ```
 
-Run specific test class:
+### 3. Generate Allure Report
 ```bash
-mvn test -Dtest=ManagerTests
-mvn test -Dtest=CustomerTests
+mvn allure:serve
 ```
 
-### Docker Execution
+## Running Tests
 
-Build and run with Docker:
+### All Tests
+```bash
+mvn clean test
+```
+
+### Specific Test Class
+```bash
+mvn test -Dtest=CustomerTests
+mvn test -Dtest=ManagerTests
+```
+
+### Headless Mode (Default)
+```bash
+mvn test -Dheadless=true
+```
+
+### With Browser UI
+```bash
+mvn test -Dheadless=false
+```
+
+## Docker Execution
+
+### Build and Run
 ```bash
 docker build -t xyz-bank-automation .
 docker run --rm xyz-bank-automation
 ```
 
-Run with Docker Compose (Selenium Grid):
+### Using Docker Compose
 ```bash
 docker-compose up --abort-on-container-exit
 ```
 
-## Generating Reports
+## Allure Reports
 
-### Allure Report
-
-Generate and view Allure report:
+### Generate and View
 ```bash
 mvn allure:report
 mvn allure:serve
 ```
 
-The report will open automatically in your default browser.
+### Features in Reports
+- Test execution summary
+- Test steps with descriptions
+- Screenshots for failed tests
+- Test duration and history
+- Categorized by Epic and Feature
 
 ## CI/CD Pipeline
 
-The project includes a GitHub Actions workflow that:
-1. Runs on push to main/develop branches
-2. Executes all tests
-3. Generates Allure reports
-4. Builds Docker image
-5. Runs tests in Docker container
-6. Publishes test results as artifacts
+Automated pipeline runs on push to `main` branch:
+1. ✅ Build project
+2. ✅ Run smoke tests
+3. ✅ Run all tests
+4. ✅ Generate Allure reports
+5. ✅ Upload test artifacts
+6. ✅ Build and test Docker image
 
-## Test Plan
+## Key Improvements
 
-Detailed test plan is available in `docs/TEST_PLAN.md` covering:
-- Test objectives and scope
-- Test scenarios and acceptance criteria
-- Test data and resources
-- Risk mitigation strategies
-- Schedule and deliverables
+### Selenium Best Practices
+- ❌ Removed implicit waits (anti-pattern)
+- ❌ Removed Thread.sleep() calls
+- ✅ Using explicit waits only
+- ✅ Proper exception handling
+- ✅ ThreadLocal WebDriver management
 
-## Page Object Model
-
-The framework uses Page Object Model (POM) design pattern:
-- **BasePage**: Common page operations
-- **HomePage**: Login selection
-- **ManagerPage**: Bank manager operations
-- **CustomerLoginPage**: Customer login
-- **AccountPage**: Customer account operations
-- **TransactionsPage**: Transaction history
-
-## Test Coverage
-
-| Feature | Test Cases | Status |
-|---------|-----------|--------|
-| Manager - Add Customer | 3 | ✓ |
-| Manager - Create Account | 1 | ✓ |
-| Manager - Delete Account | 1 | ✓ |
-| Customer - Login | 1 | ✓ |
-| Customer - Deposit | 2 | ✓ |
-| Customer - Withdraw | 2 | ✓ |
-| Customer - Transactions | 2 | ✓ |
-
-**Total**: 12 automated test cases
-
-## Latest Update
-- All tests verified and ready for CI/CD execution
-
-## Contributing
-
-1. Create a feature branch
-2. Make your changes
-3. Run tests locally
-4. Submit a pull request
+### Test Reporting
+- ✅ Automatic screenshot capture on failures
+- ✅ Allure @Step annotations for detailed reporting
+- ✅ Test categorization with @Epic and @Feature
+- ✅ Severity levels for test prioritization
 
 ## Troubleshooting
 
-**Issue**: WebDriver not found
-- **Solution**: WebDriverManager automatically downloads drivers, ensure internet connection
+**WebDriver Issues**
+- WebDriverManager auto-downloads drivers
+- Ensure internet connection on first run
 
-**Issue**: Tests fail in headless mode
-- **Solution**: Check Docker configuration and browser compatibility
+**Headless Mode Failures**
+- Check browser compatibility
+- Verify Docker configuration
 
-**Issue**: Allure report not generating
-- **Solution**: Ensure AspectJ weaver is properly configured in pom.xml
+**Allure Report Not Generating**
+- Ensure AspectJ weaver is configured in pom.xml
+- Check allure-results directory exists
 
 ## License
 
-This project is for educational purposes.
-
-## Contact
-
-For questions or issues, please open a GitHub issue.
+Educational project for test automation learning.
