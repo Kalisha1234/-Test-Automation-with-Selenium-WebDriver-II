@@ -47,7 +47,7 @@ public class DriverManager {
                 driver.set(new EdgeDriver(options));
             }
             
-            driver.get().manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+            driver.get().manage().timeouts().implicitlyWait(Duration.ofSeconds(0));
         }
         return driver.get();
     }

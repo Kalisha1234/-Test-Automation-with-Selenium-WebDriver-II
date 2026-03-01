@@ -32,25 +32,10 @@ public class BasePage {
         element.sendKeys(text);
     }
 
-    /**
-     * Enhanced type method with explicit wait for element to be interactable
-     * and JavaScript click if needed
-     */
     protected void typeWithWait(By locator, String text) {
-        // Wait for element to be both visible and enabled
         WebElement element = wait.until(ExpectedConditions.elementToBeClickable(locator));
-
-        // Scroll element into view
         ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", element);
-
-        // Small wait for scroll
-        try {
-            Thread.sleep(300);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
-        // Clear and type
+        wait.until(ExpectedConditions.elementToBeClickable(locator));
         element.clear();
         element.sendKeys(text);
     }
@@ -69,28 +54,6 @@ public class BasePage {
             return driver.findElement(locator).isDisplayed();
         } catch (Exception e) {
             return false;
-        }
-    }
-
-    /**
-     * Wait for a short period (useful after actions that trigger updates)
-     */
-    protected void shortWait() {
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-    }
-
-    /**
-     * Wait for a medium period
-     */
-    protected void mediumWait() {
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
         }
     }
 }

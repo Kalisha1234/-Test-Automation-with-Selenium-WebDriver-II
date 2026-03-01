@@ -33,19 +33,22 @@ public class AccountPage extends BasePage {
     @Step("Deposit amount: {amount}")
     public void deposit(String amount) {
         click(depositBtn);
-        shortWait();
+        wait.until(ExpectedConditions.visibilityOfElementLocated(amountInput));
         typeWithWait(amountInput, amount);
         click(depositSubmitBtn);
-        mediumWait();
+        wait.until(ExpectedConditions.textToBePresentInElementLocated(balanceLabel, ""));
     }
 
     @Step("Withdraw amount: {amount}")
     public void withdraw(String amount) {
         click(withdrawlBtn);
-        shortWait();
+        wait.until(ExpectedConditions.visibilityOfElementLocated(amountInput));
         typeWithWait(amountInput, amount);
         click(withdrawSubmitBtn);
-        mediumWait();
+        wait.until(ExpectedConditions.or(
+            ExpectedConditions.visibilityOfElementLocated(messageLabel),
+            ExpectedConditions.textToBePresentInElementLocated(balanceLabel, "")
+        ));
     }
 
     @Step("Get current balance")

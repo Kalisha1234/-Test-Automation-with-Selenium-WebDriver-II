@@ -41,7 +41,14 @@ public class ManagerPage extends BasePage {
     @Step("Accept alert")
     public String getAlertText() {
         try {
-            Thread.sleep(500);
+            wait.until(driver -> {
+                try {
+                    driver.switchTo().alert();
+                    return true;
+                } catch (Exception e) {
+                    return false;
+                }
+            });
             String alertText = driver.switchTo().alert().getText();
             driver.switchTo().alert().accept();
             return alertText;
