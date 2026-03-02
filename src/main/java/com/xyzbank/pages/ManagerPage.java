@@ -4,7 +4,8 @@ import io.qameta.allure.Step;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
-public class ManagerPage extends BasePage {
+public class ManagerPage {
+    private BasePage basePage;
     private By addCustomerBtn = By.xpath("//button[contains(text(),'Add Customer')]");
     private By openAccountBtn = By.xpath("//button[contains(text(),'Open Account')]");
     private By customersBtn = By.xpath("//button[contains(text(),'Customers')]");
@@ -21,27 +22,27 @@ public class ManagerPage extends BasePage {
     private By deleteBtn = By.xpath("//button[text()='Delete']");
 
     public ManagerPage(WebDriver driver) {
-        super(driver);
+        this.basePage = new BasePage(driver);
     }
 
     @Step("Click Add Customer button")
     public void clickAddCustomer() {
-        click(addCustomerBtn);
+        basePage.click(addCustomerBtn);
     }
 
     @Step("Add customer: {firstName} {lastName}, PostCode: {postCode}")
     public void addCustomer(String firstName, String lastName, String postCode) {
         clickAddCustomer();
-        type(firstNameInput, firstName);
-        type(lastNameInput, lastName);
-        type(postCodeInput, postCode);
-        click(addCustomerSubmitBtn);
+        basePage.type(firstNameInput, firstName);
+        basePage.type(lastNameInput, lastName);
+        basePage.type(postCodeInput, postCode);
+        basePage.click(addCustomerSubmitBtn);
     }
 
     @Step("Accept alert")
     public String getAlertText() {
         try {
-            wait.until(driver -> {
+            basePage.wait.until(driver -> {
                 try {
                     driver.switchTo().alert();
                     return true;
@@ -49,8 +50,8 @@ public class ManagerPage extends BasePage {
                     return false;
                 }
             });
-            String alertText = driver.switchTo().alert().getText();
-            driver.switchTo().alert().accept();
+            String alertText = basePage.driver.switchTo().alert().getText();
+            basePage.driver.switchTo().alert().accept();
             return alertText;
         } catch (Exception e) {
             return "";
@@ -59,25 +60,25 @@ public class ManagerPage extends BasePage {
 
     @Step("Click Open Account button")
     public void clickOpenAccount() {
-        click(openAccountBtn);
+        basePage.click(openAccountBtn);
     }
 
     @Step("Open account for customer: {customerName} with currency: {currency}")
     public void openAccount(String customerName, String currency) {
         clickOpenAccount();
-        selectByVisibleText(customerSelect, customerName);
-        selectByVisibleText(currencySelect, currency);
-        click(processBtn);
+        basePage.selectByVisibleText(customerSelect, customerName);
+        basePage.selectByVisibleText(currencySelect, currency);
+        basePage.click(processBtn);
     }
 
     @Step("Click Customers button")
     public void clickCustomers() {
-        click(customersBtn);
+        basePage.click(customersBtn);
     }
 
     @Step("Delete first customer")
     public void deleteFirstCustomer() {
         clickCustomers();
-        click(deleteBtn);
+        basePage.click(deleteBtn);
     }
 }

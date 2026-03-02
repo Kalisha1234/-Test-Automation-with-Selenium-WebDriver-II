@@ -48,7 +48,7 @@ public class TestData {
     // Transaction Amounts
     public static class Amounts {
         public static final String SMALL_DEPOSIT = "100";
-        public static final String MEDIUM_DEPOSIT = "500";
+        public static final String MEDIUM_DEPOSIT = "300";
         public static final String LARGE_DEPOSIT = "1000";
         public static final String EXTRA_LARGE_DEPOSIT = "2000";
 

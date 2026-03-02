@@ -40,7 +40,7 @@ public class ManagerTests extends BaseTest {
                 TestData.ManagerData.ValidCustomers.POSTAL_CODE
         );
         String alertText = managerPage.getAlertText();
-        assertTrue(alertText.contains(TestData.Messages.CUSTOMER_ADDED_SUCCESS) || alertText.isEmpty(),
+        assertFalse(alertText.contains(TestData.Messages.CUSTOMER_ADDED_SUCCESS) || alertText.isEmpty(),
                 "System should handle invalid name");
     }
 
@@ -56,7 +56,7 @@ public class ManagerTests extends BaseTest {
                 TestData.ManagerData.InvalidCustomers.INVALID_POSTAL_CODE_ALPHA
         );
         String alertText = managerPage.getAlertText();
-        assertTrue(alertText.contains(TestData.Messages.CUSTOMER_ADDED_SUCCESS) || alertText.isEmpty(),
+        assertFalse(alertText.contains(TestData.Messages.CUSTOMER_ADDED_SUCCESS) || alertText.isEmpty(),
                 "System should handle invalid postal code");
     }
 

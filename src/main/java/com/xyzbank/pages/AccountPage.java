@@ -5,8 +5,8 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
-public class AccountPage extends BasePage {
-
+public class AccountPage  {
+    private BasePage basePage;
     private By transactionsBtn = By.xpath("//button[contains(text(),'Transactions')]");
     private By depositBtn = By.xpath("//button[contains(text(),'Deposit')]");
     private By withdrawlBtn = By.xpath("//button[contains(text(),'Withdrawl')]");
@@ -21,31 +21,31 @@ public class AccountPage extends BasePage {
     private By messageLabel = By.xpath("//span[contains(@class,'error')]");
 
     public AccountPage(WebDriver driver) {
-        super(driver);
+        this.basePage = new BasePage(driver);
     }
 
     @Step("Click Transactions button")
     public TransactionsPage clickTransactions() {
-        click(transactionsBtn);
-        return new TransactionsPage(driver);
+        basePage.click(transactionsBtn);
+        return new TransactionsPage(basePage.driver);
     }
 
     @Step("Deposit amount: {amount}")
     public void deposit(String amount) {
-        click(depositBtn);
-        wait.until(ExpectedConditions.visibilityOfElementLocated(amountInput));
-        typeWithWait(amountInput, amount);
-        click(depositSubmitBtn);
-        wait.until(ExpectedConditions.textToBePresentInElementLocated(balanceLabel, ""));
+        basePage.click(depositBtn);
+        basePage.wait.until(ExpectedConditions.visibilityOfElementLocated(amountInput));
+        basePage.typeWithWait(amountInput, amount);
+        basePage.click(depositSubmitBtn);
+        basePage.wait.until(ExpectedConditions.textToBePresentInElementLocated(balanceLabel, ""));
     }
 
     @Step("Withdraw amount: {amount}")
     public void withdraw(String amount) {
-        click(withdrawlBtn);
-        wait.until(ExpectedConditions.visibilityOfElementLocated(amountInput));
-        typeWithWait(amountInput, amount);
-        click(withdrawSubmitBtn);
-        wait.until(ExpectedConditions.or(
+        basePage.click(withdrawlBtn);
+        basePage.wait.until(ExpectedConditions.visibilityOfElementLocated(amountInput));
+        basePage.typeWithWait(amountInput, amount);
+        basePage.click(withdrawSubmitBtn);
+        basePage.wait.until(ExpectedConditions.or(
             ExpectedConditions.visibilityOfElementLocated(messageLabel),
             ExpectedConditions.textToBePresentInElementLocated(balanceLabel, "")
         ));
@@ -53,14 +53,14 @@ public class AccountPage extends BasePage {
 
     @Step("Get current balance")
     public String getBalance() {
-        return getText(balanceLabel);
+        return basePage.getText(balanceLabel);
     }
 
     @Step("Get message")
     public String getMessage() {
         try {
-            wait.until(ExpectedConditions.visibilityOfElementLocated(messageLabel));
-            return getText(messageLabel);
+            basePage.wait.until(ExpectedConditions.visibilityOfElementLocated(messageLabel));
+            return basePage.getText(messageLabel);
         } catch (Exception e) {
             return "";
         }

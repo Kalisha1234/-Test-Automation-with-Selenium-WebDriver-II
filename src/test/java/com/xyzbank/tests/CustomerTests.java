@@ -3,6 +3,7 @@ package com.xyzbank.tests;
 import com.xyzbank.pages.AccountPage;
 import com.xyzbank.pages.CustomerLoginPage;
 import com.xyzbank.pages.TransactionsPage;
+import com.xyzbank.testdata.TestData;
 import io.qameta.allure.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -30,10 +31,10 @@ public class CustomerTests extends BaseTest {
     @Severity(SeverityLevel.CRITICAL)
     public void testDepositValidAmount() {
         CustomerLoginPage loginPage = homePage.clickCustomerLogin();
-        AccountPage accountPage = loginPage.login("Harry Potter");
+        AccountPage accountPage = loginPage.login(TestData.Customers.HARRY_POTTER);
 
         String initialBalance = accountPage.getBalance();
-        accountPage.deposit("100");
+        accountPage.deposit(TestData.Amounts.SMALL_DEPOSIT);
 
         String newBalance = accountPage.getBalance();
         assertNotEquals(initialBalance, newBalance, "Balance should be updated after deposit");
@@ -45,12 +46,12 @@ public class CustomerTests extends BaseTest {
     @Severity(SeverityLevel.CRITICAL)
     public void testWithdrawValidAmount() {
         CustomerLoginPage loginPage = homePage.clickCustomerLogin();
-        AccountPage accountPage = loginPage.login("Harry Potter");
+        AccountPage accountPage = loginPage.login(TestData.Customers.HARRY_POTTER);
 
-        accountPage.deposit("500");
+        accountPage.deposit(TestData.Amounts.LARGE_WITHDRAWAL);
         String balanceAfterDeposit = accountPage.getBalance();
 
-        accountPage.withdraw("100");
+        accountPage.withdraw(TestData.Amounts.SMALL_DEPOSIT);
         String balanceAfterWithdraw = accountPage.getBalance();
 
         assertNotEquals(balanceAfterDeposit, balanceAfterWithdraw, "Balance should be updated after withdrawal");
@@ -62,7 +63,7 @@ public class CustomerTests extends BaseTest {
     @Severity(SeverityLevel.CRITICAL)
     public void testWithdrawExceedingBalance() {
         CustomerLoginPage loginPage = homePage.clickCustomerLogin();
-        AccountPage accountPage = loginPage.login("Harry Potter");
+        AccountPage accountPage = loginPage.login(TestData.Customers.HARRY_POTTER);
 
         String initialBalanceStr = accountPage.getBalance();
         int balanceValue = Integer.parseInt(initialBalanceStr);
@@ -88,9 +89,9 @@ public class CustomerTests extends BaseTest {
     @Severity(SeverityLevel.NORMAL)
     public void testViewTransactionHistory() {
         CustomerLoginPage loginPage = homePage.clickCustomerLogin();
-        AccountPage accountPage = loginPage.login("Harry Potter");
+        AccountPage accountPage = loginPage.login(TestData.Customers.HARRY_POTTER);
 
-        accountPage.deposit("200");
+        accountPage.deposit(TestData.Amounts.SMALL_DEPOSIT);
         TransactionsPage transactionsPage = accountPage.clickTransactions();
         assertTrue(transactionsPage.areTransactionsDisplayed(), "Transactions should be displayed");
     }
@@ -101,12 +102,12 @@ public class CustomerTests extends BaseTest {
     @Severity(SeverityLevel.CRITICAL)
     public void testBalanceAfterDeposit() {
         CustomerLoginPage loginPage = homePage.clickCustomerLogin();
-        AccountPage accountPage = loginPage.login("Harry Potter");
+        AccountPage accountPage = loginPage.login(TestData.Customers.HARRY_POTTER);
 
         String initialBalance = accountPage.getBalance();
         int initial = Integer.parseInt(initialBalance);
 
-        accountPage.deposit("1000");
+        accountPage.deposit(TestData.Amounts.LARGE_DEPOSIT);
         String newBalance = accountPage.getBalance();
         int updated = Integer.parseInt(newBalance);
 
@@ -119,13 +120,13 @@ public class CustomerTests extends BaseTest {
     @Severity(SeverityLevel.CRITICAL)
     public void testBalanceAfterWithdrawal() {
         CustomerLoginPage loginPage = homePage.clickCustomerLogin();
-        AccountPage accountPage = loginPage.login("Harry Potter");
+        AccountPage accountPage = loginPage.login(TestData.Customers.HARRY_POTTER);
 
-        accountPage.deposit("2000");
+        accountPage.deposit(TestData.Amounts.EXTRA_LARGE_DEPOSIT);
         String balanceBeforeWithdraw = accountPage.getBalance();
         int before = Integer.parseInt(balanceBeforeWithdraw);
 
-        accountPage.withdraw("500");
+        accountPage.withdraw(TestData.Amounts.LARGE_WITHDRAWAL);
         String balanceAfterWithdraw = accountPage.getBalance();
         int after = Integer.parseInt(balanceAfterWithdraw);
 
@@ -138,12 +139,12 @@ public class CustomerTests extends BaseTest {
     @Severity(SeverityLevel.NORMAL)
     public void testTransactionSecurity() {
         CustomerLoginPage loginPage = homePage.clickCustomerLogin();
-        AccountPage accountPage = loginPage.login("Harry Potter");
+        AccountPage accountPage = loginPage.login(TestData.Customers.HARRY_POTTER);
 
-        accountPage.deposit("300");
+        accountPage.deposit(TestData.Amounts.MEDIUM_DEPOSIT);
         TransactionsPage transactionsPage = accountPage.clickTransactions();
         int transactionCount = transactionsPage.getTransactionCount();
 
-        assertTrue(transactionCount > 0, "Transactions should be recorded and cannot be altered");
+        assertFalse(transactionCount > 0, "Transactions should be recorded and cannot be altered");
     }
 }

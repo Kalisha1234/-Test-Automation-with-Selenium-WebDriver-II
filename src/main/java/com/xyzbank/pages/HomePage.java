@@ -4,29 +4,30 @@ import io.qameta.allure.Step;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
-public class HomePage extends BasePage {
+public class HomePage {
+    private BasePage basePage;
     private By managerLoginBtn = By.xpath("//button[text()='Bank Manager Login']");
     private By customerLoginBtn = By.xpath("//button[text()='Customer Login']");
     private By homeBtn = By.xpath("//button[text()='Home']");
 
     public HomePage(WebDriver driver) {
-        super(driver);
+        this.basePage = new BasePage(driver);
     }
 
     @Step("Click Bank Manager Login")
     public ManagerPage clickManagerLogin() {
-        click(managerLoginBtn);
-        return new ManagerPage(driver);
+        basePage.click(managerLoginBtn);
+        return new ManagerPage(basePage.driver);
     }
 
     @Step("Click Customer Login")
     public CustomerLoginPage clickCustomerLogin() {
-        click(customerLoginBtn);
-        return new CustomerLoginPage(driver);
+        basePage.click(customerLoginBtn);
+        return new CustomerLoginPage(basePage.driver);
     }
 
     @Step("Click Home button")
     public void clickHome() {
-        click(homeBtn);
+        basePage.click(homeBtn);
     }
 }
