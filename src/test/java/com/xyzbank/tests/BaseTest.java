@@ -3,7 +3,7 @@ package com.xyzbank.tests;
 import com.xyzbank.listeners.TestListener;
 import com.xyzbank.pages.HomePage;
 import com.xyzbank.utils.DriverManager;
-import org.junit.jupiter.api.AfterEach;
+import com.xyzbank.utils.Log;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.openqa.selenium.WebDriver;
@@ -15,13 +15,10 @@ public class BaseTest {
 
     @BeforeEach
     public void setUp() {
+        Log.info("Setting up test - launching browser and navigating to app");
         driver = DriverManager.getDriver();
         DriverManager.navigateToApp();
         homePage = new HomePage(driver);
-    }
-
-    @AfterEach
-    public void tearDown() {
-        DriverManager.quitDriver();
+        Log.info("Browser launched and app loaded successfully");
     }
 }
