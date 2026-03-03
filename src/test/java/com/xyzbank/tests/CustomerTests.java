@@ -1,5 +1,6 @@
 package com.xyzbank.tests;
 
+import com.xyzbank.base.BaseTest;
 import com.xyzbank.pages.AccountPage;
 import com.xyzbank.pages.CustomerLoginPage;
 import com.xyzbank.pages.TransactionsPage;

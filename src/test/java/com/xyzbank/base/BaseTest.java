@@ -1,4 +1,4 @@
-package com.xyzbank.tests;
+package com.xyzbank.base;
 
 import com.xyzbank.listeners.TestListener;
 import com.xyzbank.pages.HomePage;
