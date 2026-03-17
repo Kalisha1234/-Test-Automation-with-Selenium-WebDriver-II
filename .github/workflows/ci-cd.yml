@@ -25,10 +25,6 @@ jobs:
     - name: Build with Maven
       run: mvn clean compile
     
-    - name: Run smoke tests first
-      run: mvn test -Dtest=SmokeTest
-      continue-on-error: false
-    
     - name: Run browser tests
       id: tests
       run: mvn test -Dbrowser=chrome
@@ -38,11 +34,11 @@ jobs:
       if: always()
       id: test_results
       run: |
-        if [ -f target/surefire-reports/*.xml ]; then
-          TESTS_RUN=$(grep -oP '(?<=tests=")[0-9]+' target/surefire-reports/*.xml | awk '{s+=$1} END {print s}')
-          FAILURES=$(grep -oP '(?<=failures=")[0-9]+' target/surefire-reports/*.xml | awk '{s+=$1} END {print s}')
-          ERRORS=$(grep -oP '(?<=errors=")[0-9]+' target/surefire-reports/*.xml | awk '{s+=$1} END {print s}')
-          SKIPPED=$(grep -oP '(?<=skipped=")[0-9]+' target/surefire-reports/*.xml | awk '{s+=$1} END {print s}')
+        if ls target/surefire-reports/*.xml 1> /dev/null 2>&1; then
+          TESTS_RUN=$(grep -oP '(?<=tests=")[0-9]+' target/surefire-reports/TEST-*.xml | awk '{s+=$1} END {print s}')
+          FAILURES=$(grep -oP '(?<=failures=")[0-9]+' target/surefire-reports/TEST-*.xml | awk '{s+=$1} END {print s}')
+          ERRORS=$(grep -oP '(?<=errors=")[0-9]+' target/surefire-reports/TEST-*.xml | awk '{s+=$1} END {print s}')
+          SKIPPED=$(grep -oP '(?<=skipped=")[0-9]+' target/surefire-reports/TEST-*.xml | awk '{s+=$1} END {print s}')
           PASSED=$((TESTS_RUN - FAILURES - ERRORS))
           
           echo "tests_run=$TESTS_RUN" >> $GITHUB_OUTPUT
@@ -50,6 +46,27 @@ jobs:
           echo "failures=$FAILURES" >> $GITHUB_OUTPUT
           echo "errors=$ERRORS" >> $GITHUB_OUTPUT
           echo "skipped=$SKIPPED" >> $GITHUB_OUTPUT
+          
+          # Extract failed test details from text reports
+          FAILED_DETAILS=""
+          if [ $FAILURES -gt 0 ] || [ $ERRORS -gt 0 ]; then
+            for txtfile in target/surefire-reports/*.txt; do
+              if grep -q "FAILURE\|ERROR" "$txtfile" 2>/dev/null; then
+                TEST_CLASS=$(basename "$txtfile" .txt)
+                while IFS= read -r line; do
+                  if [[ $line =~ ^[a-zA-Z] ]] && [[ $line =~ Time\ elapsed ]]; then
+                    TEST_METHOD=$(echo "$line" | awk '{print $1}')
+                    if [[ $line =~ FAILURE|ERROR ]]; then
+                      FAILED_DETAILS="${FAILED_DETAILS}• ${TEST_CLASS}.${TEST_METHOD}\n"
+                    fi
+                  fi
+                done < "$txtfile"
+              fi
+            done
+          fi
+          echo "failed_tests<<EOF" >> $GITHUB_OUTPUT
+          echo -e "$FAILED_DETAILS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
           
           if [ $FAILURES -eq 0 ] && [ $ERRORS -eq 0 ]; then
             echo "status=success" >> $GITHUB_OUTPUT
@@ -60,7 +77,7 @@ jobs:
             echo "status=failure" >> $GITHUB_OUTPUT
             echo "status_icon=❌" >> $GITHUB_OUTPUT
             echo "status_text=Build Failed" >> $GITHUB_OUTPUT
-            echo "status_message=Some tests failed" >> $GITHUB_OUTPUT
+            echo "status_message=$FAILURES test(s) failed, $ERRORS error(s)" >> $GITHUB_OUTPUT
           fi
         else
           echo "tests_run=0" >> $GITHUB_OUTPUT
@@ -68,6 +85,7 @@ jobs:
           echo "failures=0" >> $GITHUB_OUTPUT
           echo "errors=0" >> $GITHUB_OUTPUT
           echo "skipped=0" >> $GITHUB_OUTPUT
+          echo "failed_tests=" >> $GITHUB_OUTPUT
           echo "status=unknown" >> $GITHUB_OUTPUT
           echo "status_icon=⚠️" >> $GITHUB_OUTPUT
           echo "status_text=No Test Results" >> $GITHUB_OUTPUT
@@ -156,6 +174,13 @@ jobs:
                     "text": "*SKIPPED*\n${{ steps.test_results.outputs.skipped }}"
                   }
                 ]
+              },
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "${{ steps.test_results.outputs.failures > 0 && format('*Failed Tests:*\n{0}', steps.test_results.outputs.failed_tests) || '' }}"
+                }
               },
               {
                 "type": "divider"
@@ -273,6 +298,8 @@ jobs:
                     </div>
                   </div>
                 </div>
+                
+                ${{ steps.test_results.outputs.failures > 0 && format('<div class="section"><div class="section-title">FAILED TESTS</div><div class="section-value" style="color: #dc3545; white-space: pre-line;">{0}</div></div>', steps.test_results.outputs.failed_tests) || '' }}
                 
                 <div class="section">
                   <div class="section-title">Branch</div>
