@@ -15,6 +15,7 @@ public class ManagerPage {
     private WebDriverWait wait;
     private WebDriverWait longWait;
 
+
     private By addCustomerBtn = By.xpath("//button[contains(text(),'Add Customer')]");
     private By openAccountBtn = By.xpath("//button[contains(text(),'Open Account')]");
     private By customersBtn = By.xpath("//button[contains(text(),'Customers')]");

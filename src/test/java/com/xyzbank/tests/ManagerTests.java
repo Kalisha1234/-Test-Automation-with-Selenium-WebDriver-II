@@ -18,7 +18,7 @@ public class ManagerTests extends BaseTest {
     @Description("Verify that bank manager can add a customer with valid first name, last name, and postal code")
     @Severity(SeverityLevel.CRITICAL)
     public void testAddCustomerWithValidData() {
-        ManagerPage managerPage = homePage.clickManagerLogin();
+        homePage.clickManagerLogin();
         managerPage.addCustomer(
                 TestData.ManagerData.ValidCustomers.FIRST_NAME,
                 TestData.ManagerData.ValidCustomers.LAST_NAME,

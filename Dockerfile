@@ -23,4 +23,4 @@ COPY src ./src
 RUN mvn dependency:go-offline
 
 # Run tests
-CMD ["mvn", "clean", "test", "-Dbrowser=chrome"]
+CMD ["mvn", "clean", "test", "-Dbrowser=chrome", "-Dheadless=true"]

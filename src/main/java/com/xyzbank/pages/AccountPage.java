@@ -13,7 +13,7 @@ import java.time.Duration;
 public class AccountPage {
     private WebDriver driver;
     private WebDriverWait wait;
-
+// locators
     private By transactionsBtn = By.xpath("//button[contains(text(),'Transactions')]");
     private By depositBtn = By.xpath("//button[contains(text(),'Deposit')]");
     private By withdrawlBtn = By.xpath("//button[contains(text(),'Withdrawl')]");

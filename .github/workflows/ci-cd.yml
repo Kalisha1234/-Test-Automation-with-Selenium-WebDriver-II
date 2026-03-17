@@ -30,8 +30,49 @@ jobs:
       continue-on-error: false
     
     - name: Run browser tests
+      id: tests
       run: mvn test -Dbrowser=chrome
       continue-on-error: true
+    
+    - name: Extract Test Results
+      if: always()
+      id: test_results
+      run: |
+        if [ -f target/surefire-reports/*.xml ]; then
+          TESTS_RUN=$(grep -oP '(?<=tests=")[0-9]+' target/surefire-reports/*.xml | awk '{s+=$1} END {print s}')
+          FAILURES=$(grep -oP '(?<=failures=")[0-9]+' target/surefire-reports/*.xml | awk '{s+=$1} END {print s}')
+          ERRORS=$(grep -oP '(?<=errors=")[0-9]+' target/surefire-reports/*.xml | awk '{s+=$1} END {print s}')
+          SKIPPED=$(grep -oP '(?<=skipped=")[0-9]+' target/surefire-reports/*.xml | awk '{s+=$1} END {print s}')
+          PASSED=$((TESTS_RUN - FAILURES - ERRORS))
+          
+          echo "tests_run=$TESTS_RUN" >> $GITHUB_OUTPUT
+          echo "passed=$PASSED" >> $GITHUB_OUTPUT
+          echo "failures=$FAILURES" >> $GITHUB_OUTPUT
+          echo "errors=$ERRORS" >> $GITHUB_OUTPUT
+          echo "skipped=$SKIPPED" >> $GITHUB_OUTPUT
+          
+          if [ $FAILURES -eq 0 ] && [ $ERRORS -eq 0 ]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "status_icon=✅" >> $GITHUB_OUTPUT
+            echo "status_text=Build Successful" >> $GITHUB_OUTPUT
+            echo "status_message=All tests passed successfully" >> $GITHUB_OUTPUT
+          else
+            echo "status=failure" >> $GITHUB_OUTPUT
+            echo "status_icon=❌" >> $GITHUB_OUTPUT
+            echo "status_text=Build Failed" >> $GITHUB_OUTPUT
+            echo "status_message=Some tests failed" >> $GITHUB_OUTPUT
+          fi
+        else
+          echo "tests_run=0" >> $GITHUB_OUTPUT
+          echo "passed=0" >> $GITHUB_OUTPUT
+          echo "failures=0" >> $GITHUB_OUTPUT
+          echo "errors=0" >> $GITHUB_OUTPUT
+          echo "skipped=0" >> $GITHUB_OUTPUT
+          echo "status=unknown" >> $GITHUB_OUTPUT
+          echo "status_icon=⚠️" >> $GITHUB_OUTPUT
+          echo "status_text=No Test Results" >> $GITHUB_OUTPUT
+          echo "status_message=Test reports not found" >> $GITHUB_OUTPUT
+        fi
     
     - name: Generate Allure Report
       if: always()
@@ -50,6 +91,209 @@ jobs:
       with:
         name: allure-report
         path: target/site/allure-maven-plugin
+    
+    - name: Send Slack Notification
+      if: always()
+      uses: slackapi/slack-github-action@v1.26.0
+      with:
+        payload: |
+          {
+            "text": "XYZ Bank Test Automation Results",
+            "blocks": [
+              {
+                "type": "header",
+                "text": {
+                  "type": "plain_text",
+                  "text": "${{ steps.test_results.outputs.status_icon }} ${{ steps.test_results.outputs.status_text }}"
+                }
+              },
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "*${{ steps.test_results.outputs.status_message }}*"
+                }
+              },
+              {
+                "type": "divider"
+              },
+              {
+                "type": "section",
+                "fields": [
+                  {
+                    "type": "mrkdwn",
+                    "text": "*REPOSITORY*\n${{ github.repository }}"
+                  }
+                ]
+              },
+              {
+                "type": "divider"
+              },
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "*Test Summary*"
+                }
+              },
+              {
+                "type": "section",
+                "fields": [
+                  {
+                    "type": "mrkdwn",
+                    "text": "*TESTS RUN*\n${{ steps.test_results.outputs.tests_run }}"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*PASSED*\n${{ steps.test_results.outputs.passed }}"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*FAILURES*\n${{ steps.test_results.outputs.failures }}"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*SKIPPED*\n${{ steps.test_results.outputs.skipped }}"
+                  }
+                ]
+              },
+              {
+                "type": "divider"
+              },
+              {
+                "type": "section",
+                "fields": [
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Branch:* ${{ github.ref_name }}"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Author:* ${{ github.actor }}"
+                  }
+                ]
+              },
+              {
+                "type": "actions",
+                "elements": [
+                  {
+                    "type": "button",
+                    "text": {
+                      "type": "plain_text",
+                      "text": "View Full Execution"
+                    },
+                    "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+                    "style": "primary"
+                  }
+                ]
+              },
+              {
+                "type": "context",
+                "elements": [
+                  {
+                    "type": "mrkdwn",
+                    "text": "GitHub Actions • Automated Test Report"
+                  }
+                ]
+              }
+            ]
+          }
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+    
+    - name: Send Email Notification
+      if: always()
+      uses: dawidd6/action-send-mail@v3
+      with:
+        server_address: smtp.gmail.com
+        server_port: 587
+        username: ${{ secrets.EMAIL_USERNAME }}
+        password: ${{ secrets.EMAIL_PASSWORD }}
+        subject: "${{ steps.test_results.outputs.status_icon }} XYZ Bank Test Automation - ${{ steps.test_results.outputs.status_text }}"
+        to: ${{ secrets.EMAIL_TO }}
+        from: ${{ secrets.EMAIL_USERNAME }}
+        html_body: |
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <style>
+              body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f5; }
+              .container { max-width: 600px; margin: 0 auto; background-color: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+              .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; }
+              .header h1 { margin: 0; font-size: 24px; font-weight: 600; }
+              .header p { margin: 10px 0 0 0; font-size: 16px; opacity: 0.9; }
+              .content { padding: 30px; }
+              .section { margin-bottom: 25px; }
+              .section-title { font-size: 12px; font-weight: 600; color: #666; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+              .section-value { font-size: 16px; color: #333; }
+              .test-summary { background-color: #f8f9fa; border-radius: 6px; padding: 20px; margin: 20px 0; }
+              .test-summary h3 { margin: 0 0 15px 0; font-size: 16px; color: #333; }
+              .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+              .stat-box { padding: 15px; border-radius: 6px; }
+              .stat-box.green { background-color: #d4edda; }
+              .stat-box.red { background-color: #f8d7da; }
+              .stat-box.yellow { background-color: #fff3cd; }
+              .stat-label { font-size: 11px; font-weight: 600; color: #666; text-transform: uppercase; margin-bottom: 5px; }
+              .stat-value { font-size: 28px; font-weight: 700; color: #333; }
+              .button { display: inline-block; background-color: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; margin: 20px 0; }
+              .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; border-top: 1px solid #eee; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>${{ steps.test_results.outputs.status_icon }} ${{ steps.test_results.outputs.status_text }}</h1>
+                <p>${{ steps.test_results.outputs.status_message }}</p>
+              </div>
+              <div class="content">
+                <div class="section">
+                  <div class="section-title">REPOSITORY</div>
+                  <div class="section-value">${{ github.repository }}</div>
+                </div>
+                
+                <div class="test-summary">
+                  <h3>Test Summary</h3>
+                  <div class="stats-grid">
+                    <div class="stat-box green">
+                      <div class="stat-label">TESTS RUN</div>
+                      <div class="stat-value">${{ steps.test_results.outputs.tests_run }}</div>
+                    </div>
+                    <div class="stat-box green">
+                      <div class="stat-label">PASSED</div>
+                      <div class="stat-value">${{ steps.test_results.outputs.passed }}</div>
+                    </div>
+                    <div class="stat-box red">
+                      <div class="stat-label">FAILURES</div>
+                      <div class="stat-value">${{ steps.test_results.outputs.failures }}</div>
+                    </div>
+                    <div class="stat-box yellow">
+                      <div class="stat-label">SKIPPED</div>
+                      <div class="stat-value">${{ steps.test_results.outputs.skipped }}</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="section">
+                  <div class="section-title">Branch</div>
+                  <div class="section-value">${{ github.ref_name }}</div>
+                </div>
+                
+                <div class="section">
+                  <div class="section-title">Author</div>
+                  <div class="section-value">${{ github.actor }}</div>
+                </div>
+                
+                <div style="text-align: center;">
+                  <a href="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" class="button">View Full Execution</a>
+                </div>
+              </div>
+              <div class="footer">
+                GitHub Actions • Automated Test Report
+              </div>
+            </div>
+          </body>
+          </html>
 
   docker-build:
     runs-on: ubuntu-latest
