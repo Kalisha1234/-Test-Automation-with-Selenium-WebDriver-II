@@ -47,16 +47,18 @@ jobs:
               E=$(grep '<testsuite' "$file" | sed -n 's/.*errors="\([0-9]*\)".*/\1/p')
               S=$(grep '<testsuite' "$file" | sed -n 's/.*skipped="\([0-9]*\)".*/\1/p')
               
-              TESTS_RUN=$((TESTS_RUN + ${T:-0}))
-              FAILURES=$((FAILURES + ${F:-0}))
-              ERRORS=$((ERRORS + ${E:-0}))
-              SKIPPED=$((SKIPPED + ${S:-0}))
+              # Only add if values are not empty
+              [ -n "$T" ] && TESTS_RUN=$((TESTS_RUN + T))
+              [ -n "$F" ] && FAILURES=$((FAILURES + F))
+              [ -n "$E" ] && ERRORS=$((ERRORS + E))
+              [ -n "$S" ] && SKIPPED=$((SKIPPED + S))
             fi
           done
           
-          # Combine errors and failures
+          # Combine errors and failures for display
           TOTAL_FAILURES=$((FAILURES + ERRORS))
-          PASSED=$((TESTS_RUN - TOTAL_FAILURES - SKIPPED))
+          # Calculate passed correctly
+          PASSED=$((TESTS_RUN - FAILURES - ERRORS - SKIPPED))
           
           echo "tests_run=$TESTS_RUN" >> $GITHUB_OUTPUT
           echo "passed=$PASSED" >> $GITHUB_OUTPUT
