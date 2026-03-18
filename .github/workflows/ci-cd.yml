@@ -33,24 +33,25 @@ jobs:
     - name: Extract Test Results
       if: always()
       id: test_results
-      shell: bash
       run: |
-        if [ -d "target/surefire-reports" ] && compgen -G "target/surefire-reports/TEST-*.xml" > /dev/null; then
+        if [ -d "target/surefire-reports" ]; then
           TESTS_RUN=0
           FAILURES=0
           ERRORS=0
           SKIPPED=0
           
           for file in target/surefire-reports/TEST-*.xml; do
-            T=$(grep '<testsuite' "$file" | grep -oP 'tests="\K[0-9]+' || echo "0")
-            F=$(grep '<testsuite' "$file" | grep -oP 'failures="\K[0-9]+' || echo "0")
-            E=$(grep '<testsuite' "$file" | grep -oP 'errors="\K[0-9]+' || echo "0")
-            S=$(grep '<testsuite' "$file" | grep -oP 'skipped="\K[0-9]+' || echo "0")
-            
-            TESTS_RUN=$((TESTS_RUN + T))
-            FAILURES=$((FAILURES + F))
-            ERRORS=$((ERRORS + E))
-            SKIPPED=$((SKIPPED + S))
+            if [ -f "$file" ]; then
+              T=$(grep '<testsuite' "$file" | sed -n 's/.*tests="\([0-9]*\)".*/\1/p')
+              F=$(grep '<testsuite' "$file" | sed -n 's/.*failures="\([0-9]*\)".*/\1/p')
+              E=$(grep '<testsuite' "$file" | sed -n 's/.*errors="\([0-9]*\)".*/\1/p')
+              S=$(grep '<testsuite' "$file" | sed -n 's/.*skipped="\([0-9]*\)".*/\1/p')
+              
+              TESTS_RUN=$((TESTS_RUN + ${T:-0}))
+              FAILURES=$((FAILURES + ${F:-0}))
+              ERRORS=$((ERRORS + ${E:-0}))
+              SKIPPED=$((SKIPPED + ${S:-0}))
+            fi
           done
           
           # Combine errors and failures
@@ -61,18 +62,6 @@ jobs:
           echo "passed=$PASSED" >> $GITHUB_OUTPUT
           echo "failures=$TOTAL_FAILURES" >> $GITHUB_OUTPUT
           echo "skipped=$SKIPPED" >> $GITHUB_OUTPUT
-          
-          # Extract failed test names
-          FAILED_LIST=""
-          if [ $TOTAL_FAILURES -gt 0 ]; then
-            FAILED_LIST=$(grep -h '<testcase' target/surefire-reports/TEST-*.xml | grep -A1 '<failure\|<error' | grep 'testcase' | grep -oP 'name="\K[^"]+' | head -10 | sed 's/^/• /' | paste -sd ' ' -)
-          fi
-          
-          if [ -z "$FAILED_LIST" ]; then
-            FAILED_LIST="None"
-          fi
-          
-          echo "failed_tests=$FAILED_LIST" >> $GITHUB_OUTPUT
           
           if [ $TOTAL_FAILURES -eq 0 ]; then
             echo "status=success" >> $GITHUB_OUTPUT
@@ -90,7 +79,6 @@ jobs:
           echo "passed=0" >> $GITHUB_OUTPUT
           echo "failures=0" >> $GITHUB_OUTPUT
           echo "skipped=0" >> $GITHUB_OUTPUT
-          echo "failed_tests=None" >> $GITHUB_OUTPUT
           echo "status=unknown" >> $GITHUB_OUTPUT
           echo "status_icon=⚠️" >> $GITHUB_OUTPUT
           echo "status_text=No Test Results" >> $GITHUB_OUTPUT
