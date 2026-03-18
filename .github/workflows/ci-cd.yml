@@ -33,30 +33,39 @@ jobs:
     - name: Extract Test Results
       if: always()
       id: test_results
+      shell: bash
       run: |
-        if [ -d "target/surefire-reports" ] && [ -n "$(ls -A target/surefire-reports/TEST-*.xml 2>/dev/null)" ]; then
-          TESTS_RUN=$(grep -h 'testsuite' target/surefire-reports/TEST-*.xml | grep -oP 'tests="\K[0-9]+' | awk '{s+=$1} END {print s}')
-          FAILURES=$(grep -h 'testsuite' target/surefire-reports/TEST-*.xml | grep -oP 'failures="\K[0-9]+' | awk '{s+=$1} END {print s}')
-          ERRORS=$(grep -h 'testsuite' target/surefire-reports/TEST-*.xml | grep -oP 'errors="\K[0-9]+' | awk '{s+=$1} END {print s}')
-          SKIPPED=$(grep -h 'testsuite' target/surefire-reports/TEST-*.xml | grep -oP 'skipped="\K[0-9]+' | awk '{s+=$1} END {print s}')
+        if [ -d "target/surefire-reports" ] && compgen -G "target/surefire-reports/TEST-*.xml" > /dev/null; then
+          TESTS_RUN=0
+          FAILURES=0
+          ERRORS=0
+          SKIPPED=0
           
-          # Default to 0 if empty
-          TESTS_RUN=${TESTS_RUN:-0}
-          FAILURES=${FAILURES:-0}
-          ERRORS=${ERRORS:-0}
-          SKIPPED=${SKIPPED:-0}
-          PASSED=$((TESTS_RUN - FAILURES - ERRORS))
+          for file in target/surefire-reports/TEST-*.xml; do
+            T=$(grep '<testsuite' "$file" | grep -oP 'tests="\K[0-9]+' || echo "0")
+            F=$(grep '<testsuite' "$file" | grep -oP 'failures="\K[0-9]+' || echo "0")
+            E=$(grep '<testsuite' "$file" | grep -oP 'errors="\K[0-9]+' || echo "0")
+            S=$(grep '<testsuite' "$file" | grep -oP 'skipped="\K[0-9]+' || echo "0")
+            
+            TESTS_RUN=$((TESTS_RUN + T))
+            FAILURES=$((FAILURES + F))
+            ERRORS=$((ERRORS + E))
+            SKIPPED=$((SKIPPED + S))
+          done
+          
+          # Combine errors and failures
+          TOTAL_FAILURES=$((FAILURES + ERRORS))
+          PASSED=$((TESTS_RUN - TOTAL_FAILURES - SKIPPED))
           
           echo "tests_run=$TESTS_RUN" >> $GITHUB_OUTPUT
           echo "passed=$PASSED" >> $GITHUB_OUTPUT
-          echo "failures=$FAILURES" >> $GITHUB_OUTPUT
-          echo "errors=$ERRORS" >> $GITHUB_OUTPUT
+          echo "failures=$TOTAL_FAILURES" >> $GITHUB_OUTPUT
           echo "skipped=$SKIPPED" >> $GITHUB_OUTPUT
           
           # Extract failed test names
           FAILED_LIST=""
-          if [ $FAILURES -gt 0 ] || [ $ERRORS -gt 0 ]; then
-            FAILED_LIST=$(grep -h '<testcase' target/surefire-reports/TEST-*.xml | grep -B1 '<failure\|<error' | grep 'testcase' | grep -oP 'name="\K[^"]+' | head -10 | sed 's/^/• /' | tr '\n' ' ')
+          if [ $TOTAL_FAILURES -gt 0 ]; then
+            FAILED_LIST=$(grep -h '<testcase' target/surefire-reports/TEST-*.xml | grep -A1 '<failure\|<error' | grep 'testcase' | grep -oP 'name="\K[^"]+' | head -10 | sed 's/^/• /' | paste -sd ' ' -)
           fi
           
           if [ -z "$FAILED_LIST" ]; then
@@ -65,7 +74,7 @@ jobs:
           
           echo "failed_tests=$FAILED_LIST" >> $GITHUB_OUTPUT
           
-          if [ $FAILURES -eq 0 ] && [ $ERRORS -eq 0 ]; then
+          if [ $TOTAL_FAILURES -eq 0 ]; then
             echo "status=success" >> $GITHUB_OUTPUT
             echo "status_icon=✅" >> $GITHUB_OUTPUT
             echo "status_text=Build Successful" >> $GITHUB_OUTPUT
@@ -74,13 +83,12 @@ jobs:
             echo "status=failure" >> $GITHUB_OUTPUT
             echo "status_icon=❌" >> $GITHUB_OUTPUT
             echo "status_text=Build Failed" >> $GITHUB_OUTPUT
-            echo "status_message=$FAILURES failures, $ERRORS errors" >> $GITHUB_OUTPUT
+            echo "status_message=$TOTAL_FAILURES test(s) failed" >> $GITHUB_OUTPUT
           fi
         else
           echo "tests_run=0" >> $GITHUB_OUTPUT
           echo "passed=0" >> $GITHUB_OUTPUT
           echo "failures=0" >> $GITHUB_OUTPUT
-          echo "errors=0" >> $GITHUB_OUTPUT
           echo "skipped=0" >> $GITHUB_OUTPUT
           echo "failed_tests=None" >> $GITHUB_OUTPUT
           echo "status=unknown" >> $GITHUB_OUTPUT
